@@ -10,10 +10,23 @@
 #' @export
 #'
 #' @examples
-fit_lcm <- function(num, pop, link=c("log", "logit"), se=T, ...) {
+fit_lcm <- function(num, pop, periods=NULL, ages=NULL, link=c("log", "logit"), se=T, ...) {
   link <- match.arg(link)
 
   pop[pop<num] <- num[pop<num] + 1
+
+  n_age <- ncol(pop)
+  n_per <- nrow(pop)
+
+  if (is.null(ages)) {
+    ages <- colnames(pop)
+    if (is.null(ages)) ages <- 1:n_age
+  }
+
+  if (is.null(periods)) {
+    periods <- suppressWarnings(as.numeric(rownames(pop)))
+    if (any(is.na(periods))) periods <- 1:n_per
+  }
 
   if (link == "log") {
     model <- fit_lcm_poisson(num, pop, se, ...)
@@ -21,10 +34,11 @@ fit_lcm <- function(num, pop, link=c("log", "logit"), se=T, ...) {
     model <- fit_lcm_binomial(num, pop, se, ...)
   }
 
+
   res <- list(
     model=model,
     link=link,
-    data=list(N=num, P=pop)
+    data=list(Event=num, Population=pop, Ages=ages, Periods=periods)
   )
 
   class(res) <- "LCM"
@@ -33,7 +47,7 @@ fit_lcm <- function(num, pop, link=c("log", "logit"), se=T, ...) {
 }
 
 
-fit_lcm_poisson <- function(num, pop, se=T, tol=10e-5, max_iter=1000) {
+fit_lcm_poisson <- function(num, pop, se=T, fitted=T, tol=10e-5, max_iter=1000) {
   n_age <- ncol(pop)
   n_per <- nrow(pop)
 
@@ -134,12 +148,16 @@ fit_lcm_poisson <- function(num, pop, se=T, tol=10e-5, max_iter=1000) {
     res <- c(res, list(ax.se=ax.se, bx.se=bx.se, kt.se=kt.se))
   }
 
-  res$fitted <- exp(t(ax+bx%*%t(kt)))
-  dimnames(res$fitted) <- dimnames(pop)
+
+
+  if (fitted) {
+    res$fitted <- exp(t(ax+bx%*%t(kt)))
+    dimnames(res$fitted) <- dimnames(pop)
+  }
   res
 }
 
 
-fit_lcm_binomial <- function(num, pop, se, tol=10e-5, max_iter=1000) {
+fit_lcm_binomial <- function(num, pop, se=T, fitted=T, tol=10e-5, max_iter=1000) {
 
 }
