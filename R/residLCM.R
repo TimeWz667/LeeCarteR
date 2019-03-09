@@ -10,7 +10,7 @@
 residuals.LCM <- function(obj, type=c("deviance", "pearson")) {
   type <- match.arg(type)
   dhat <- obj$model$fitted
-  ddat <- obj$data$N/obj$data$P
+  ddat <- obj$data$Event/obj$data$Population
 
   if (obj$link=="log") {
     if (type=="deviance") {

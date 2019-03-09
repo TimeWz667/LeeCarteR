@@ -13,6 +13,7 @@
 fit_lcm <- function(num, pop, periods=NULL, ages=NULL, link=c("log", "logit"), se=T, ...) {
   link <- match.arg(link)
 
+  num <- round(num)
   pop[pop<num] <- num[pop<num] + 1
 
   n_age <- ncol(pop)
@@ -148,7 +149,16 @@ fit_lcm_poisson <- function(num, pop, se=T, fitted=T, tol=10e-5, max_iter=1000) 
     res <- c(res, list(ax.se=ax.se, bx.se=bx.se, kt.se=kt.se))
   }
 
+  loglik <- li0
+  n_pars <- 2*n_age + n_per - 2
 
+  res$meta <- list(
+    aic=2*n_pars-2*loglik,
+    bic=log(n_age*n_per)*n_pars - 2*loglik,
+    loglik=loglik,
+    n.pars=n_pars,
+    n.data=n_age*n_per
+  )
 
   if (fitted) {
     res$fitted <- exp(t(ax+bx%*%t(kt)))

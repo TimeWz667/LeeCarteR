@@ -1,6 +1,6 @@
 
 
-bootstrap <- function(obj, B=1000, n_foreward=10, B_kt=B/10, spe=c("ar1", "ma1", "i1"), calculate=T) {
+bootstrap <- function(obj, B=1000, n_forward=10, B_kt=B/10, spe=c("ar1", "ma1", "i1"), calculate=T) {
   spe <- match.arg(spe)
   n_p <- ceiling(B / B_kt)
 
@@ -19,8 +19,8 @@ bootstrap <- function(obj, B=1000, n_foreward=10, B_kt=B/10, spe=c("ar1", "ma1",
       samp <- matrix(rbinom(n_obj, pop, num/pop), n_per, n_age)
       res <- fit_lcm_binomial(samp, pop, fitted=F, se=F, max_iter=200)
     }
-    res$kt.fore <- sim_kt(res$kt, n_foreward, spe)
-    res$kt.fore.mc <- sim_boot_kt(kt=res$kt, n_foreward=n_foreward, B=B_kt, spe)
+    res$kt.fore <- sim_kt(res$kt, n_forward, spe)
+    res$kt.fore.mc <- sim_boot_kt(kt=res$kt, n_forward=n_forward, B=B_kt, spe)
     res
   })
 
@@ -34,7 +34,7 @@ bootstrap <- function(obj, B=1000, n_foreward=10, B_kt=B/10, spe=c("ar1", "ma1",
     kt <- bot[[b]]$kt
     for(k in 1:B_kt) {
       kt.fore <- bot[[b]]$kt.fore.mc[k, ]
-      names(kt.fore) <- tail(obj$data$Periods, 1) + 1:n_foreward
+      names(kt.fore) <- tail(obj$data$Periods, 1) + 1:n_forward
 
       mc[[i]] <- list(
         ax=ax, bx=bx, kt=kt, kt.fore=kt.fore
@@ -49,8 +49,8 @@ bootstrap <- function(obj, B=1000, n_foreward=10, B_kt=B/10, spe=c("ar1", "ma1",
         mx <- with(xt, exp(t(ax+bx%*%t(kt))))
         mx.fore <- with(xt, exp(t(ax+bx%*%t(kt.fore))))
       } else {
-        mx <- with(xt, {1/(1+exp(t(ax+bx%*%t(kt))))})
-        mx.fore <- with(xt, 1/(1+exp(t(ax+bx%*%t(kt)))))
+        mx <- with(xt, {1/(1+exp(-t(ax+bx%*%t(kt))))})
+        mx.fore <- with(xt, 1/(1+exp(-t(ax+bx%*%t(kt)))))
       }
       colnames(mx) <- colnames(mx.fore) <- obj$data$Ages
       c(xt, list(mx=mx, mx.fore=mx.fore))

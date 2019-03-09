@@ -10,10 +10,10 @@ License: MIT
 Encoding: UTF-8
 Imports:
     MASS,
-    rootSolve (>= 1.6.5.1),
     numDeriv,
     TSA
 Depends:
     R,
+    numDeriv,
     forecast
 LazyData: true
